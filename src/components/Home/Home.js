@@ -71,7 +71,7 @@ const Home = () => {
                 {progress === 1 ? "Uploading" : progress === 2 ? "Complete" : ''}
                 {
                     url.map(
-                        imgUrl => <Card key={imgUrl} />
+                        imgUrl => <Card props={imgUrl} />
                     )
                 }
             </main>

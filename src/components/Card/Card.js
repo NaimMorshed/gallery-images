@@ -1,12 +1,9 @@
 import React from 'react';
 import './Card.css';
 
-const Card = ({key}) => {
+const Card = ({props}) => {
     return (
-        <img style={{
-            width: '120px',
-            height: '100px',
-        }} src={key} alt="img" />
+        <img className="image" src={props} alt="img" />
     );
 };
 
