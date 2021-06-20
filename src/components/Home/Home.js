@@ -1,15 +1,21 @@
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { storage, db } from '../../firebase/index';
+import { storage, db, realDb } from '../../firebase/index';
 import icon from '../../assets/upload.png';
 import './Home.css';
 import Card from '../Card/Card';
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { makeStyles } from '@material-ui/core/styles';
+const useStyles = makeStyles((theme) => ({ backdrop: { zIndex: theme.zIndex.drawer + 1, color: '#fff', }, }));
 
 const Home = () => {
     const [files, setFiles] = React.useState([]);
-    const [progress, setProgress] = React.useState(0);
     const [url, setUrl] = React.useState([]);
+    const [message, setMessage] = React.useState("Please wait");
     let arr = [];
+    const classes = useStyles();
+    const [open, setOpen] = React.useState(false);
 
     const onDrop = useCallback(acceptedFiles => {
         setFiles(acceptedFiles);
@@ -20,24 +26,31 @@ const Home = () => {
             const uploadTask = storage.ref(file.name).put(file);
             uploadTask.on(
                 'state_changed',
-                snapshot => setProgress(1),
+                snapshot => {
+                    setMessage("Uploading: " 
+                    + (Math.floor(snapshot.bytesTransferred / 1024)) 
+                    + "kb / " + (Math.floor(snapshot.totalBytes / 1024)) 
+                    + "kb");
+                    setOpen(true)
+                },
                 error => alert(error),
                 () => {
                     storage
                         .ref(file.name)
                         .getDownloadURL()
                         .then(url => {
-                            setProgress(2);
-                            // firestore upload
+                            setMessage("Please wait");
+
                             db.collection("images")
                                 .add({
                                     url: url
                                 })
                                 .then(() => {
-                                    console.log("SUCCESS");
+                                    setOpen(false);
                                 })
                                 .catch((err) => {
                                     alert("Error: " + err);
+                                    setOpen(false);
                                 })
                         })
                 }
@@ -67,14 +80,25 @@ const Home = () => {
                 </div>
             </header>
             <main>
-                <h1>Total images: {url.length}</h1>
-                {progress === 1 ? "Uploading" : progress === 2 ? "Complete" : ''}
-                {
-                    url.map(
-                        imgUrl => <Card props={imgUrl} />
-                    )
-                }
+                <div className="center top-div">
+                    <span>Images: {url.length}</span>
+                </div>
+                <div className="image-container">
+                    {
+                        url.map(
+                            imgUrl => <Card props={imgUrl} />
+                        )
+                    }
+                </div>
             </main>
+            <div>
+                <Backdrop className={classes.backdrop} open={open}>
+                    <div className="center-col">
+                        <CircularProgress color="inherit" />
+                        <h5 className="mt-2">{message}</h5>
+                    </div>
+                </Backdrop>
+            </div>
         </div>
     );
 };
