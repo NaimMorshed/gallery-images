@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { storage, db, realDb } from '../../firebase/index';
+import { storage, db } from '../../firebase/index';
 import icon from '../../assets/upload.png';
 import './Home.css';
 import Card from '../Card/Card';
@@ -13,7 +13,7 @@ const Home = () => {
     const [files, setFiles] = React.useState([]);
     const [url, setUrl] = React.useState([]);
     const [message, setMessage] = React.useState("Please wait");
-    let arr = [];
+    let array = [];
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
 
@@ -22,15 +22,16 @@ const Home = () => {
     }, [])
 
     React.useEffect(() => {
+        // eslint-disable-next-line array-callback-return
         files.map(file => {
             const uploadTask = storage.ref(file.name).put(file);
             uploadTask.on(
                 'state_changed',
                 snapshot => {
-                    setMessage("Uploading: " 
-                    + (Math.floor(snapshot.bytesTransferred / 1024)) 
-                    + "kb / " + (Math.floor(snapshot.totalBytes / 1024)) 
-                    + "kb");
+                    setMessage("Uploading: "
+                        + (Math.floor(snapshot.bytesTransferred / 1024))
+                        + "kb / " + (Math.floor(snapshot.totalBytes / 1024))
+                        + "kb");
                     setOpen(true)
                 },
                 error => alert(error),
@@ -66,9 +67,9 @@ const Home = () => {
         .get()
         .then(snapshot => {
             snapshot.forEach(doc => {
-                arr.push(doc.data().url);
+                array.push(doc.data().url);
             });
-            setUrl(arr);
+            setUrl(array);
         });
 
     return (
